@@ -22,7 +22,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          # cache: 'yarn' # Disabled to prevent using system Yarn v1 which conflicts with Corepack Yarn v4
 
       - name: Enable Corepack
         run: corepack enable
@@ -59,12 +58,11 @@ jobs:
           path: webs/dist/
           retention-days: 1
 
-  # 使用矩阵策略并发构建不同架构的二进制文件
   build-go-binaries:
     needs: build-frontend
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false  # 允许其他架构继续构建，即使某个失败
+      fail-fast: false
       matrix:
         include:
           - goos: linux
@@ -94,7 +92,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.25.5'
+          go-version: '1.24' # 建议使用稳定版本
           cache: true
           cache-dependency-path: go.sum
 
@@ -112,31 +110,18 @@ jobs:
             TAG_NAME=$(git rev-parse --short HEAD)
           fi
           echo "$TAG_NAME" > VERSION
-          echo "Written version $TAG_NAME to VERSION file"
 
       - name: Build Go binary for ${{ matrix.goos }}/${{ matrix.goarch }}
         run: |
           mkdir -p build
-          echo "Building ${{ matrix.output }} for ${{ matrix.goos }}/${{ matrix.goarch }}..."
           CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
             go build -tags=prod -ldflags="-s -w" -o build/${{ matrix.output }} .
-          echo "Build completed. Binary size:"
-          ls -lh build/${{ matrix.output }}
 
       - name: Compress binary with UPX
         if: matrix.upx
         run: |
-          # 安装 UPX
           sudo apt-get update && sudo apt-get install -y upx
-          
-          echo "=== Original binary size ==="
-          ls -lh build/${{ matrix.output }}
-          
-          # 使用最佳压缩率压缩 Linux 二进制文件
           upx --best --lzma build/${{ matrix.output }} || true
-          
-          echo "=== Compressed binary size ==="
-          ls -lh build/${{ matrix.output }}
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
@@ -145,7 +130,6 @@ jobs:
           path: build/${{ matrix.output }}
           retention-days: 1
 
-  # 合并所有架构的二进制文件
   merge-binaries:
     needs: build-go-binaries
     runs-on: ubuntu-latest
@@ -156,37 +140,6 @@ jobs:
           pattern: binary-*
           path: build/
           merge-multiple: true
-
-      - name: Verify all binaries
-        run: |
-          echo "=== All binary files ==="
-          ls -lh build/
-          
-          # 验证所有必需的二进制文件都存在
-          REQUIRED_FILES=(
-            "sublinkPro-linux-amd64"
-            "sublinkPro-linux-arm64"
-            "sublinkPro-windows-amd64.exe"
-            "sublinkPro-darwin-amd64"
-            "sublinkPro-darwin-arm64"
-          )
-          
-          MISSING=0
-          for file in "${REQUIRED_FILES[@]}"; do
-            if [ ! -f "build/$file" ]; then
-              echo "ERROR: Missing required binary: $file"
-              MISSING=1
-            else
-              echo "OK: $file exists"
-            fi
-          done
-          
-          if [ $MISSING -eq 1 ]; then
-            echo "ERROR: Some required binaries are missing!"
-            exit 1
-          fi
-          
-          echo "=== All binaries verified successfully ==="
 
       - name: Upload merged binaries
         uses: actions/upload-artifact@v4
@@ -211,48 +164,10 @@ jobs:
           name: go-binaries
           path: build/
 
-      - name: Generate changelog
-        id: changelog
-        run: |
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
-          
-          echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
-          
-          if [ -z "$PREVIOUS_TAG" ]; then
-            echo "## 🎉 首次发布" > changelog.md
-            echo "" >> changelog.md
-            echo "### 📝 所有提交:" >> changelog.md
-            git log --pretty=format:"- %s (%h)" >> changelog.md
-          else
-            echo "## 🚀 更新内容 ($PREVIOUS_TAG -> $CURRENT_TAG)" > changelog.md
-            echo "" >> changelog.md
-            echo "### 📝 提交记录:" >> changelog.md
-            git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..$CURRENT_TAG >> changelog.md
-          fi
-          
-          echo "" >> changelog.md
-          echo "### 📦 发布文件:" >> changelog.md
-          echo "- \`sublinkPro-linux-amd64\` - Linux x64" >> changelog.md
-          echo "- \`sublinkPro-linux-arm64\` - Linux ARM64" >> changelog.md
-          echo "- \`sublinkPro-windows-amd64.exe\` - Windows x64" >> changelog.md
-          echo "- \`sublinkPro-darwin-amd64\` - macOS x64" >> changelog.md
-          echo "- \`sublinkPro-darwin-arm64\` - macOS ARM64 (Apple Silicon)" >> changelog.md
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.changelog.outputs.current_tag }}
-          name: Release ${{ steps.changelog.outputs.current_tag }}
-          body_path: changelog.md
-          files: |
-            build/sublinkPro-linux-amd64
-            build/sublinkPro-linux-arm64
-            build/sublinkPro-windows-amd64.exe
-            build/sublinkPro-darwin-amd64
-            build/sublinkPro-darwin-arm64
-          draft: false
-          prerelease: false
+          files: build/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -281,24 +196,28 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Multi-Arch Docker Image
         run: |
+          # 镜像名称转为小写（GHCR 强制要求）
+          IMAGE_ID=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             TAG=${GITHUB_REF#refs/tags/}
             docker buildx build --no-cache --pull --platform linux/amd64,linux/arm64 \
               -f Dockerfile.ci \
-              -t zerodeng/sublink-pro:${TAG} \
-              -t zerodeng/sublink-pro:latest \
+              -t ${IMAGE_ID}:${TAG} \
+              -t ${IMAGE_ID}:latest \
               --push .
           elif [[ $GITHUB_REF == refs/heads/dev ]]; then
             docker buildx build --no-cache --pull --platform linux/amd64,linux/arm64 \
               -f Dockerfile.ci \
-              -t zerodeng/sublink-pro:dev \
+              -t ${IMAGE_ID}:dev \
               --push .
           fi
