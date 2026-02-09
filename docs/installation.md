@@ -14,8 +14,8 @@
 ```yaml
 services:
   sublinkpro:
-    # image: zerodeng/sublink-pro:dev # 开发版（功能尝鲜使用）
-    image: zerodeng/sublink-pro # 稳定版
+    # image: ghcr.io/sakuralaaa/sublinkpro:dev # 开发版（功能尝鲜使用）
+    image: ghcr.io/sakuralaaa/sublinkpro # 稳定版
     container_name: sublinkpro
     ports:
       - "8000:8000"
@@ -44,7 +44,7 @@ docker run --name sublinkpro -p 8000:8000 \
   -v $PWD/db:/app/db \
   -v $PWD/template:/app/template \
   -v $PWD/logs:/app/logs \
-  -d zerodeng/sublink-pro
+  -d ghcr.io/sakuralaaa/sublinkpro
 ```
 
 </details>
@@ -57,7 +57,7 @@ docker run --name sublinkpro -p 8000:8000 \
   -v $PWD/db:/app/db \
   -v $PWD/template:/app/template \
   -v $PWD/logs:/app/logs \
-  -d zerodeng/sublink-pro:dev
+  -d ghcr.io/sakuralaaa/sublinkpro:dev
 ```
 
 </details>
@@ -67,7 +67,7 @@ docker run --name sublinkpro -p 8000:8000 \
 ## 📝 一键安装/更新脚本
 
 ```bash
-wget https://raw.githubusercontent.com/ZeroDeng01/sublinkPro/refs/heads/main/install.sh && sh install.sh
+wget https://raw.githubusercontent.com/Sakuralaaa/sublinkPro/refs/heads/main/install.sh && sh install.sh
 ```
 
 > [!NOTE]
@@ -82,7 +82,7 @@ wget https://raw.githubusercontent.com/ZeroDeng01/sublinkPro/refs/heads/main/ins
 ## 🗑️ 一键卸载脚本
 
 ```bash
-wget https://raw.githubusercontent.com/ZeroDeng01/sublinkPro/refs/heads/main/uninstall.sh && sh uninstall.sh
+wget https://raw.githubusercontent.com/Sakuralaaa/sublinkPro/refs/heads/main/uninstall.sh && sh uninstall.sh
 ```
 
 > [!NOTE]
@@ -97,7 +97,7 @@ wget https://raw.githubusercontent.com/ZeroDeng01/sublinkPro/refs/heads/main/uni
 如果您使用一键脚本安装，可以再次运行安装脚本进行更新：
 
 ```bash
-wget https://raw.githubusercontent.com/ZeroDeng01/sublinkPro/refs/heads/main/install.sh && sh install.sh
+wget https://raw.githubusercontent.com/Sakuralaaa/sublinkPro/refs/heads/main/install.sh && sh install.sh
 ```
 
 脚本会自动检测已安装的版本，并提供以下选项：
@@ -128,14 +128,14 @@ docker stop sublinkpro
 docker rm sublinkpro
 
 # 拉取最新镜像
-docker pull zerodeng/sublink-pro
+docker pull ghcr.io/sakuralaaa/sublinkpro
 
 # 重新启动容器（使用与安装时相同的参数）
 docker run --name sublinkpro -p 8000:8000 \
   -v $PWD/db:/app/db \
   -v $PWD/template:/app/template \
   -v $PWD/logs:/app/logs \
-  -d zerodeng/sublink-pro
+  -d ghcr.io/sakuralaaa/sublinkpro
 
 # （可选）清理旧镜像
 docker image prune -f
@@ -171,7 +171,7 @@ docker run -d \
 ```yaml
 services:
   sublinkpro:
-    image: zerodeng/sublink-pro
+    image: ghcr.io/sakuralaaa/sublinkpro
     container_name: sublinkpro
     ports:
       - "8000:8000"
@@ -211,7 +211,7 @@ https://zeabur.com/projects
 
 1. **新建项目与 Service**
    - 点击 "创建项目" > "Docker 容器镜像"
-   - 输入镜像名称：`zerodeng/sublink-pro:latest`  (推荐稳定版 latest，开发版 dev 用于测试新功能)
+   - 输入镜像名称：`ghcr.io/sakuralaaa/sublinkpro:latest`  (推荐稳定版 latest，开发版 dev 用于测试新功能)
    - 配置端口：`8000` (HTTP)
    - **配置卷（重要）**：
      * 点击卷
