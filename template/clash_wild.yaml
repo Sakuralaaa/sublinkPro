@@ -1,0 +1,536 @@
+# ====================================================
+# 🎯 SublinkPro 打野节点专用 Clash 模板
+# ====================================================
+# 适用场景：大量打野/采集订阅节点，经过 SublinkPro 过滤后导入 Clash 使用
+# 特点：
+#   1. 自动选择低延迟节点，打野节点质量参差不齐，自动容错
+#   2. 按地区分组方便手动切换，支持香港/日本/美国/新加坡/台湾/韩国/欧洲/其他
+#   3. AI/流媒体/社交/下载等常见场景独立分流
+#   4. 内置广告拦截规则
+#   5. 使用 __ALL_PROXIES__ 占位符，SublinkPro 会自动注入所有节点
+# ====================================================
+
+port: 7890
+socks-port: 7891
+mixed-port: 7893
+allow-lan: true
+bind-address: '*'
+mode: Rule
+log-level: info
+external-controller: :9090
+
+# DNS 配置 - 防泄漏
+dns:
+  enabled: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - '*.localhost'
+    - localhost.ptlogin2.qq.com
+    - dns.msftncsi.com
+    - www.msftncsi.com
+    - www.msftconnecttest.com
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+  fallback:
+    - https://dns.google/dns-query
+    - https://cloudflare-dns.com/dns-query
+    - tls://8.8.8.8:853
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+      - 240.0.0.0/4
+
+proxies: ~
+
+proxy-groups:
+  # ======== 主选择组 ========
+  - name: 🚀 节点选择
+    type: select
+    proxies:
+      - ♻️ 自动选择
+      - 🔯 故障转移
+      - 🇭🇰 香港节点
+      - 🇯🇵 日本节点
+      - 🇺🇲 美国节点
+      - 🇸🇬 狮城节点
+      - 🇨🇳 台湾节点
+      - 🇰🇷 韩国节点
+      - 🌐 其他节点
+      - 🔧 手动切换
+      - DIRECT
+
+  # ======== 自动选择（url-test 延迟最低） ========
+  - name: ♻️ 自动选择
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 100
+    lazy: true
+
+  # ======== 故障转移（fallback 自动切换可用节点） ========
+  - name: 🔯 故障转移
+    type: fallback
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    lazy: true
+
+  # ======== 手动切换（手动选择单个节点） ========
+  - name: 🔧 手动切换
+    type: select
+
+  # ======== AI 平台（ChatGPT/Claude/Gemini 等） ========
+  - name: 🤖 AI 平台
+    type: select
+    proxies:
+      - 🇺🇲 美国节点
+      - 🇯🇵 日本节点
+      - 🇸🇬 狮城节点
+      - 🇰🇷 韩国节点
+      - 🚀 节点选择
+      - 🔧 手动切换
+
+  # ======== 流媒体 ========
+  - name: 📹 YouTube
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🇭🇰 香港节点
+      - 🇯🇵 日本节点
+      - 🇺🇲 美国节点
+      - 🇸🇬 狮城节点
+      - 🇨🇳 台湾节点
+      - 🇰🇷 韩国节点
+      - 🔧 手动切换
+
+  - name: 🎥 Netflix
+    type: select
+    proxies:
+      - 🇸🇬 狮城节点
+      - 🇭🇰 香港节点
+      - 🇯🇵 日本节点
+      - 🇺🇲 美国节点
+      - 🇨🇳 台湾节点
+      - 🚀 节点选择
+      - 🔧 手动切换
+
+  - name: 🎵 Spotify
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🇭🇰 香港节点
+      - 🇺🇲 美国节点
+      - 🇯🇵 日本节点
+      - DIRECT
+
+  # ======== 社交通讯 ========
+  - name: 📲 Telegram
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🇸🇬 狮城节点
+      - 🇭🇰 香港节点
+      - 🇺🇲 美国节点
+      - 🔧 手动切换
+
+  # ======== 微软服务 ========
+  - name: Ⓜ️ 微软服务
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 节点选择
+      - 🇺🇲 美国节点
+      - 🇭🇰 香港节点
+      - 🔧 手动切换
+
+  # ======== 苹果服务 ========
+  - name: 🍎 苹果服务
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 节点选择
+      - 🇺🇲 美国节点
+      - 🇭🇰 香港节点
+      - 🔧 手动切换
+
+  # ======== 游戏平台 ========
+  - name: 🎮 游戏平台
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 节点选择
+      - 🇭🇰 香港节点
+      - 🇯🇵 日本节点
+      - 🇰🇷 韩国节点
+      - 🔧 手动切换
+
+  # ======== 全球直连 ========
+  - name: 🎯 全球直连
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 节点选择
+
+  # ======== 广告拦截 ========
+  - name: 🛑 广告拦截
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+
+  # ======== 兜底规则 ========
+  - name: 🐟 漏网之鱼
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - DIRECT
+      - 🔧 手动切换
+
+  # ======== 地区节点组（自动测速） ========
+  - name: 🇭🇰 香港节点
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    lazy: true
+
+  - name: 🇯🇵 日本节点
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 80
+    lazy: true
+
+  - name: 🇺🇲 美国节点
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 150
+    lazy: true
+
+  - name: 🇸🇬 狮城节点
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 80
+    lazy: true
+
+  - name: 🇨🇳 台湾节点
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 80
+    lazy: true
+
+  - name: 🇰🇷 韩国节点
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 80
+    lazy: true
+
+  - name: 🌐 其他节点
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 150
+    lazy: true
+
+# ====================================================
+# 分流规则
+# ====================================================
+rules:
+  # 本地/局域网直连
+  - RULE-SET,LocalAreaNetwork,🎯 全球直连
+  - RULE-SET,UnBan,🎯 全球直连
+
+  # 广告拦截
+  - RULE-SET,BanAD,🛑 广告拦截
+  - RULE-SET,BanProgramAD,🛑 广告拦截
+
+  # AI 平台
+  - RULE-SET,AI,🤖 AI 平台
+  - RULE-SET,OpenAi,🤖 AI 平台
+
+  # 社交通讯
+  - RULE-SET,Telegram,📲 Telegram
+
+  # 流媒体
+  - RULE-SET,YouTube,📹 YouTube
+  - RULE-SET,Netflix,🎥 Netflix
+  - RULE-SET,Spotify,🎵 Spotify
+  - RULE-SET,ProxyMedia,📹 YouTube
+
+  # 微软服务
+  - RULE-SET,Bing,🤖 AI 平台
+  - RULE-SET,OneDrive,Ⓜ️ 微软服务
+  - RULE-SET,Microsoft,Ⓜ️ 微软服务
+
+  # 苹果服务
+  - RULE-SET,Apple,🍎 苹果服务
+
+  # 谷歌服务
+  - RULE-SET,GoogleFCM,🎯 全球直连
+  - RULE-SET,GoogleCN,🎯 全球直连
+
+  # 游戏平台
+  - RULE-SET,Epic,🎮 游戏平台
+  - RULE-SET,Origin,🎮 游戏平台
+  - RULE-SET,Sony,🎮 游戏平台
+  - RULE-SET,Steam,🎮 游戏平台
+  - RULE-SET,SteamCN,🎯 全球直连
+  - RULE-SET,Nintendo,🎮 游戏平台
+
+  # 国内媒体 / 哔哩哔哩
+  - RULE-SET,BilibiliHMT,🎯 全球直连
+  - RULE-SET,Bilibili,🎯 全球直连
+  - RULE-SET,ChinaMedia,🎯 全球直连
+  - RULE-SET,NetEaseMusic,🎯 全球直连
+
+  # 代理列表
+  - RULE-SET,ProxyGFWlist,🚀 节点选择
+
+  # 国内域名/IP直连
+  - RULE-SET,ChinaDomain,🎯 全球直连
+  - RULE-SET,ChinaCompanyIp,🎯 全球直连
+  - RULE-SET,Download,🎯 全球直连
+
+  # GeoIP 中国直连
+  - GEOIP,CN,🎯 全球直连
+
+  # 兜底规则
+  - MATCH,🐟 漏网之鱼
+
+# ====================================================
+# 规则提供商（ACL4SSR 规则集）
+# ====================================================
+rule-providers:
+  LocalAreaNetwork:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/LocalAreaNetwork.list
+    format: text
+    path: ./providers/LocalAreaNetwork.txt
+    interval: 86400
+  UnBan:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list
+    format: text
+    path: ./providers/UnBan.txt
+    interval: 86400
+  BanAD:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list
+    format: text
+    path: ./providers/BanAD.txt
+    interval: 86400
+  BanProgramAD:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list
+    format: text
+    path: ./providers/BanProgramAD.txt
+    interval: 86400
+  AI:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/AI.list
+    format: text
+    path: ./providers/AI.txt
+    interval: 86400
+  OpenAi:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/OpenAi.list
+    format: text
+    path: ./providers/OpenAi.txt
+    interval: 86400
+  Telegram:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Telegram.list
+    format: text
+    path: ./providers/Telegram.txt
+    interval: 86400
+  YouTube:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/YouTube.list
+    format: text
+    path: ./providers/YouTube.txt
+    interval: 86400
+  Netflix:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Netflix.list
+    format: text
+    path: ./providers/Netflix.txt
+    interval: 86400
+  Spotify:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Spotify.list
+    format: text
+    path: ./providers/Spotify.txt
+    interval: 86400
+  ProxyMedia:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyMedia.list
+    format: text
+    path: ./providers/ProxyMedia.txt
+    interval: 86400
+  Bing:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Bing.list
+    format: text
+    path: ./providers/Bing.txt
+    interval: 86400
+  OneDrive:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/OneDrive.list
+    format: text
+    path: ./providers/OneDrive.txt
+    interval: 86400
+  Microsoft:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Microsoft.list
+    format: text
+    path: ./providers/Microsoft.txt
+    interval: 86400
+  Apple:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Apple.list
+    format: text
+    path: ./providers/Apple.txt
+    interval: 86400
+  GoogleFCM:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/GoogleFCM.list
+    format: text
+    path: ./providers/GoogleFCM.txt
+    interval: 86400
+  GoogleCN:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/GoogleCN.list
+    format: text
+    path: ./providers/GoogleCN.txt
+    interval: 86400
+  Epic:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Epic.list
+    format: text
+    path: ./providers/Epic.txt
+    interval: 86400
+  Origin:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Origin.list
+    format: text
+    path: ./providers/Origin.txt
+    interval: 86400
+  Sony:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Sony.list
+    format: text
+    path: ./providers/Sony.txt
+    interval: 86400
+  Steam:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Steam.list
+    format: text
+    path: ./providers/Steam.txt
+    interval: 86400
+  SteamCN:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/SteamCN.list
+    format: text
+    path: ./providers/SteamCN.txt
+    interval: 86400
+  Nintendo:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Nintendo.list
+    format: text
+    path: ./providers/Nintendo.txt
+    interval: 86400
+  BilibiliHMT:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/BilibiliHMT.list
+    format: text
+    path: ./providers/BilibiliHMT.txt
+    interval: 86400
+  Bilibili:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Bilibili.list
+    format: text
+    path: ./providers/Bilibili.txt
+    interval: 86400
+  ChinaMedia:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaMedia.list
+    format: text
+    path: ./providers/ChinaMedia.txt
+    interval: 86400
+  NetEaseMusic:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/NetEaseMusic.list
+    format: text
+    path: ./providers/NetEaseMusic.txt
+    interval: 86400
+  ProxyGFWlist:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list
+    format: text
+    path: ./providers/ProxyGFWlist.txt
+    interval: 86400
+  ChinaDomain:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list
+    format: text
+    path: ./providers/ChinaDomain.txt
+    interval: 86400
+  ChinaCompanyIp:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaCompanyIp.list
+    format: text
+    path: ./providers/ChinaCompanyIp.txt
+    interval: 86400
+  Download:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Download.list
+    format: text
+    path: ./providers/Download.txt
+    interval: 86400
