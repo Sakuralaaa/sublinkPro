@@ -38,6 +38,12 @@ type IPInfo struct {
 // 缓存有效期：7天
 const ipInfoCacheTTL = 7 * 24 * time.Hour
 
+// ISP类型常量
+const (
+	ISPTypeHosting     = "hosting"     // 机房/数据中心
+	ISPTypeResidential = "residential" // 家宽/住宅网络
+)
+
 // ipInfoCache 内存缓存
 var ipInfoCache *cache.MapCache[string, IPInfo]
 
@@ -209,9 +215,9 @@ func fetchIPInfoFromAPI(ip string) (*IPInfo, error) {
 	}
 
 	// 根据hosting字段判断ISP类型
-	ispType := "residential" // 家宽
+	ispType := ISPTypeResidential // 家宽
 	if apiResp.Hosting {
-		ispType = "hosting" // 机房
+		ispType = ISPTypeHosting // 机房
 	}
 
 	// 转换为IPInfo结构
