@@ -266,6 +266,7 @@ func NodeGet(c *gin.Context) {
 		Protocol:    c.Query("protocol"),
 		SpeedStatus: c.Query("speedStatus"),
 		DelayStatus: c.Query("delayStatus"),
+		ISPType:     c.Query("ispType"),
 		SortBy:      c.Query("sortBy"),
 		SortOrder:   c.Query("sortOrder"),
 	}
@@ -355,6 +356,7 @@ func NodeGetIDs(c *gin.Context) {
 		Protocol:    c.Query("protocol"),
 		SpeedStatus: c.Query("speedStatus"),
 		DelayStatus: c.Query("delayStatus"),
+		ISPType:     c.Query("ispType"),
 		SortBy:      c.Query("sortBy"),
 		SortOrder:   c.Query("sortOrder"),
 	}

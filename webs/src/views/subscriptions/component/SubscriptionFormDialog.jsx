@@ -51,6 +51,9 @@ import DeduplicationConfig from './DeduplicationConfig';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CircularProgress from '@mui/material/CircularProgress';
 import { llmOrganizeNodes, llmGenerateRules } from 'api/llm';
+import { addTemplate } from 'api/templates';
+import SaveIcon from '@mui/icons-material/Save';
+import Snackbar from '@mui/material/Snackbar';
 
 // ISO国家代码转换为国旗emoji
 const isoToFlag = (isoCode) => {
@@ -164,8 +167,12 @@ export default function SubscriptionFormDialog({
 
   // LLM 相关状态
   const [llmInstruction, setLlmInstruction] = useState('');
-  const [llmLoading, setLlmLoading] = useState(false);
-  const [llmResult, setLlmResult] = useState('');
+  const [llmOrganizeLoading, setLlmOrganizeLoading] = useState(false);
+  const [llmOrganizeResult, setLlmOrganizeResult] = useState('');
+  const [llmGenerateLoading, setLlmGenerateLoading] = useState(false);
+  const [llmGenerateResult, setLlmGenerateResult] = useState('');
+  const [llmSaveTemplateName, setLlmSaveTemplateName] = useState('');
+  const [llmSaveSnackbar, setLlmSaveSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   // 构建LLM用节点列表（仅发送非敏感信息）
   const getNodesForLLM = () =>
@@ -851,71 +858,146 @@ export default function SubscriptionFormDialog({
                 <Stack direction="row" spacing={2}>
                   <Button
                     variant="outlined"
-                    startIcon={llmLoading ? <CircularProgress size={20} /> : <SmartToyIcon />}
+                    startIcon={llmOrganizeLoading ? <CircularProgress size={20} /> : <SmartToyIcon />}
                     onClick={async () => {
                       if (formData.selectedNodes.length === 0 && formData.selectedGroups.length === 0) {
-                        setLlmResult('请先选择节点或分组');
+                        setLlmOrganizeResult('请先选择节点或分组');
                         return;
                       }
-                      setLlmLoading(true);
-                      setLlmResult('');
+                      setLlmOrganizeLoading(true);
+                      setLlmOrganizeResult('');
                       try {
                         const nodes = getNodesForLLM();
                         const res = await llmOrganizeNodes({ nodes, instruction: llmInstruction });
-                        setLlmResult(res.data?.result || JSON.stringify(res.data));
+                        setLlmOrganizeResult(res.data?.result || JSON.stringify(res.data));
                       } catch (error) {
-                        setLlmResult('整理失败: ' + (error.message || '未知错误'));
+                        setLlmOrganizeResult('整理失败: ' + (error.message || '未知错误'));
                       } finally {
-                        setLlmLoading(false);
+                        setLlmOrganizeLoading(false);
                       }
                     }}
-                    disabled={llmLoading}
+                    disabled={llmOrganizeLoading || llmGenerateLoading}
                   >
                     智能整理节点
                   </Button>
                   <Button
                     variant="outlined"
-                    startIcon={llmLoading ? <CircularProgress size={20} /> : <SmartToyIcon />}
+                    startIcon={llmGenerateLoading ? <CircularProgress size={20} /> : <SmartToyIcon />}
                     onClick={async () => {
                       if (formData.selectedNodes.length === 0 && formData.selectedGroups.length === 0) {
-                        setLlmResult('请先选择节点或分组');
+                        setLlmGenerateResult('请先选择节点或分组');
                         return;
                       }
-                      setLlmLoading(true);
-                      setLlmResult('');
+                      setLlmGenerateLoading(true);
+                      setLlmGenerateResult('');
                       try {
                         const nodes = getNodesForLLM();
                         const clientType = formData.clash ? 'clash' : formData.surge ? 'surge' : 'clash';
                         const res = await llmGenerateRules({ nodes, clientType, instruction: llmInstruction });
-                        setLlmResult(res.data?.result || JSON.stringify(res.data));
+                        setLlmGenerateResult(res.data?.result || JSON.stringify(res.data));
                       } catch (error) {
-                        setLlmResult('生成失败: ' + (error.message || '未知错误'));
+                        setLlmGenerateResult('生成失败: ' + (error.message || '未知错误'));
                       } finally {
-                        setLlmLoading(false);
+                        setLlmGenerateLoading(false);
                       }
                     }}
-                    disabled={llmLoading}
+                    disabled={llmOrganizeLoading || llmGenerateLoading}
                   >
                     生成订阅规则
                   </Button>
                 </Stack>
 
-                {llmResult && (
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      maxHeight: 400,
-                      overflow: 'auto',
-                      whiteSpace: 'pre-wrap',
-                      fontFamily: 'monospace',
-                      fontSize: '0.85rem'
-                    }}
-                  >
-                    {llmResult}
+                {/* 智能整理节点结果 */}
+                {llmOrganizeResult && (
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      节点整理结果
+                    </Typography>
+                    <Box
+                      sx={{
+                        p: 2,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        maxHeight: 300,
+                        overflow: 'auto',
+                        whiteSpace: 'pre-wrap',
+                        fontFamily: 'monospace',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      {llmOrganizeResult}
+                    </Box>
                   </Box>
                 )}
+
+                {/* 生成订阅规则结果 */}
+                {llmGenerateResult && (
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      订阅规则结果
+                    </Typography>
+                    <Box
+                      sx={{
+                        p: 2,
+                        bgcolor: 'action.hover',
+                        borderRadius: 1,
+                        maxHeight: 300,
+                        overflow: 'auto',
+                        whiteSpace: 'pre-wrap',
+                        fontFamily: 'monospace',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      {llmGenerateResult}
+                    </Box>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1.5 }}>
+                      <TextField
+                        size="small"
+                        label="模版名称"
+                        value={llmSaveTemplateName}
+                        onChange={(e) => setLlmSaveTemplateName(e.target.value)}
+                        placeholder="输入模版名称保存到模版管理"
+                        sx={{ minWidth: 250 }}
+                      />
+                      <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<SaveIcon />}
+                        disabled={!llmSaveTemplateName.trim()}
+                        onClick={async () => {
+                          try {
+                            const clientType = formData.clash ? 'clash' : formData.surge ? 'surge' : 'clash';
+                            await addTemplate({
+                              filename: llmSaveTemplateName.trim(),
+                              text: llmGenerateResult,
+                              category: clientType
+                            });
+                            setLlmSaveSnackbar({ open: true, message: '已保存到模版管理', severity: 'success' });
+                            setLlmSaveTemplateName('');
+                          } catch (error) {
+                            setLlmSaveSnackbar({
+                              open: true,
+                              message: '保存失败: ' + (error.message || '未知错误'),
+                              severity: 'error'
+                            });
+                          }
+                        }}
+                      >
+                        同步到模版管理
+                      </Button>
+                    </Stack>
+                  </Box>
+                )}
+                <Snackbar
+                  open={llmSaveSnackbar.open}
+                  autoHideDuration={3000}
+                  onClose={() => setLlmSaveSnackbar({ ...llmSaveSnackbar, open: false })}
+                  anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                  <Alert severity={llmSaveSnackbar.severity} onClose={() => setLlmSaveSnackbar({ ...llmSaveSnackbar, open: false })}>
+                    {llmSaveSnackbar.message}
+                  </Alert>
+                </Snackbar>
               </Stack>
             </AccordionDetails>
           </Accordion>

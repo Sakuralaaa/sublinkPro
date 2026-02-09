@@ -95,6 +95,23 @@ func ClearAllIPInfo() error {
 	return nil
 }
 
+// GetIPInfoISPType 从缓存/数据库获取IP的ISP类型，不触发API请求
+func GetIPInfoISPType(ip string) string {
+	if ip == "" {
+		return ""
+	}
+	// 1. 检查内存缓存
+	if info, ok := ipInfoCache.Get(ip); ok {
+		return info.ISPType
+	}
+	// 2. 检查数据库
+	var dbInfo IPInfo
+	if err := database.DB.Where("ip = ?", ip).First(&dbInfo).Error; err == nil {
+		return dbInfo.ISPType
+	}
+	return ""
+}
+
 // GetIPInfo 获取IP信息（多级缓存）
 func GetIPInfo(ip string) (*IPInfo, error) {
 	if ip == "" {

@@ -5,11 +5,19 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 
 // icons
 import AddIcon from '@mui/icons-material/Add';
@@ -17,6 +25,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SpeedIcon from '@mui/icons-material/Speed';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
@@ -46,6 +55,7 @@ import {
   getProtocolUIMeta
 } from 'api/nodes';
 import { getTags, batchSetNodeTags, batchRemoveNodeTags } from 'api/tags';
+import { llmOrganizeNodes } from 'api/llm';
 
 // local components
 import {
@@ -121,6 +131,7 @@ export default function NodeList() {
   const [speedStatusFilter, setSpeedStatusFilter] = useState('');
   const [delayStatusFilter, setDelayStatusFilter] = useState('');
   const [protocolFilter, setProtocolFilter] = useState('');
+  const [ispTypeFilter, setIspTypeFilter] = useState('');
 
   // 排序
   const [sortBy, setSortBy] = useState(''); // 'delay' | 'speed' | ''
@@ -209,6 +220,12 @@ export default function NodeList() {
   // 协议 UI 元数据
   const [protocolMeta, setProtocolMeta] = useState([]);
 
+  // LLM 节点整理
+  const [llmDialogOpen, setLlmDialogOpen] = useState(false);
+  const [llmInstruction, setLlmInstruction] = useState('');
+  const [llmLoading, setLlmLoading] = useState(false);
+  const [llmResult, setLlmResult] = useState('');
+
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   // 后端已完成过滤和排序，直接使用 nodes 数组
@@ -232,6 +249,7 @@ export default function NodeList() {
       if (filterParams.speedStatus) params.speedStatus = filterParams.speedStatus;
       if (filterParams.delayStatus) params.delayStatus = filterParams.delayStatus;
       if (filterParams.protocol) params.protocol = filterParams.protocol;
+      if (filterParams.ispType) params.ispType = filterParams.ispType;
       if (filterParams.countries && filterParams.countries.length > 0) {
         params['countries[]'] = filterParams.countries;
       }
@@ -344,6 +362,7 @@ export default function NodeList() {
         speedStatus: speedStatusFilter,
         delayStatus: delayStatusFilter,
         protocol: protocolFilter,
+        ispType: ispTypeFilter,
         countries: countryFilter,
         tags: tagFilter,
         sortBy: sortBy,
@@ -370,6 +389,7 @@ export default function NodeList() {
     speedStatusFilter,
     delayStatusFilter,
     protocolFilter,
+    ispTypeFilter,
     countryFilter,
     tagFilter,
     sortBy,
@@ -387,6 +407,32 @@ export default function NodeList() {
     showMessage('已复制到剪贴板');
   };
 
+  // LLM 节点整理
+  const handleLlmOrganize = async () => {
+    const nodesList = selectedNodes.length > 0 ? nodes.filter((n) => selectedNodes.includes(n.ID)) : nodes;
+    if (nodesList.length === 0) {
+      showMessage('没有可整理的节点', 'warning');
+      return;
+    }
+    setLlmLoading(true);
+    setLlmResult('');
+    try {
+      const llmNodes = nodesList.map((n) => ({
+        id: n.ID,
+        name: n.LinkName || n.Name,
+        link: n.Link,
+        country: n.LinkCountry,
+        group: n.Group
+      }));
+      const res = await llmOrganizeNodes({ nodes: llmNodes, instruction: llmInstruction });
+      setLlmResult(res.data?.result || JSON.stringify(res.data));
+    } catch (error) {
+      setLlmResult('整理失败: ' + (error.message || '未知错误'));
+    } finally {
+      setLlmLoading(false);
+    }
+  };
+
   const resetFilters = () => {
     setSearchQuery('');
     setGroupFilter('');
@@ -398,6 +444,7 @@ export default function NodeList() {
     setCountryFilter([]);
     setTagFilter([]);
     setProtocolFilter('');
+    setIspTypeFilter('');
     setSortBy('');
     setSortOrder('asc');
   };
@@ -411,6 +458,7 @@ export default function NodeList() {
     speedStatus: speedStatusFilter,
     delayStatus: delayStatusFilter,
     protocol: protocolFilter,
+    ispType: ispTypeFilter,
     countries: countryFilter,
     tags: tagFilter,
     sortBy: sortBy,
@@ -914,6 +962,17 @@ export default function NodeList() {
             <Button variant="outlined" startIcon={<SpeedIcon />} onClick={handleBatchSpeedTest}>
               批量检测
             </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<SmartToyIcon />}
+              onClick={() => {
+                setLlmResult('');
+                setLlmDialogOpen(true);
+              }}
+            >
+              节点整理
+            </Button>
             <IconButton onClick={handleRefresh} disabled={loading}>
               <RefreshIcon
                 sx={
@@ -959,6 +1018,19 @@ export default function NodeList() {
           <Button size="small" variant="outlined" startIcon={<SpeedIcon />} onClick={handleBatchSpeedTest} sx={{ whiteSpace: 'nowrap' }}>
             批量检测
           </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            color="secondary"
+            startIcon={<SmartToyIcon />}
+            onClick={() => {
+              setLlmResult('');
+              setLlmDialogOpen(true);
+            }}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            节点整理
+          </Button>
           <IconButton size="small" onClick={handleRefresh} disabled={loading}>
             <RefreshIcon
               sx={
@@ -995,6 +1067,8 @@ export default function NodeList() {
         setTagFilter={setTagFilter}
         protocolFilter={protocolFilter}
         setProtocolFilter={setProtocolFilter}
+        ispTypeFilter={ispTypeFilter}
+        setIspTypeFilter={setIspTypeFilter}
         groupOptions={groupOptions}
         sourceOptions={sourceOptions}
         countryOptions={countryOptions}
@@ -1231,6 +1305,63 @@ export default function NodeList() {
         onClose={handleConfirmClose}
         onConfirm={confirmInfo.action}
       />
+
+      {/* LLM 节点整理对话框 */}
+      <Dialog open={llmDialogOpen} onClose={() => setLlmDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <SmartToyIcon color="primary" />
+            <Typography variant="h6">LLM 节点整理</Typography>
+          </Stack>
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <Alert severity="info">
+              <Typography variant="body2">
+                使用大语言模型智能整理{selectedNodes.length > 0 ? `已选中的 ${selectedNodes.length} 个` : '当前页面的'}
+                节点。请先在设置页面配置 LLM API。
+              </Typography>
+            </Alert>
+            <TextField
+              fullWidth
+              label="指令说明（可选）"
+              multiline
+              rows={2}
+              value={llmInstruction}
+              onChange={(e) => setLlmInstruction(e.target.value)}
+              placeholder="例如：按地区分组节点，将相同国家的节点归为一组"
+              helperText="告诉 AI 你希望如何整理节点，留空将使用默认策略"
+            />
+            <Button
+              variant="contained"
+              startIcon={llmLoading ? <CircularProgress size={20} color="inherit" /> : <SmartToyIcon />}
+              onClick={handleLlmOrganize}
+              disabled={llmLoading}
+            >
+              {llmLoading ? '整理中...' : '开始整理'}
+            </Button>
+            {llmResult && (
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: 'action.hover',
+                  borderRadius: 1,
+                  maxHeight: 400,
+                  overflow: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  fontFamily: 'monospace',
+                  fontSize: '0.85rem'
+                }}
+              >
+                {llmResult}
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLlmDialogOpen(false)}>关闭</Button>
+        </DialogActions>
+      </Dialog>
     </MainCard>
   );
 }
