@@ -137,6 +137,7 @@ export default function IPDetailsDialog({ open, onClose, ip, onCopy }) {
         isp: data.isp,
         org: data.org,
         as: data.as,
+        ispType: data.ispType,
         provider: data.provider
       };
       // 缓存成功结果到 localStorage
@@ -294,6 +295,19 @@ export default function IPDetailsDialog({ open, onClose, ip, onCopy }) {
                 </Typography>
               </Stack>
               <Stack spacing={0.5}>
+                {ipInfo.ispType && (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="body2">
+                      <strong>线路类型:</strong>
+                    </Typography>
+                    <Chip
+                      label={ipInfo.ispType === 'hosting' ? '机房' : '家宽'}
+                      size="small"
+                      color={ipInfo.ispType === 'hosting' ? 'warning' : 'success'}
+                      variant="outlined"
+                    />
+                  </Stack>
+                )}
                 {ipInfo.isp && (
                   <Typography variant="body2">
                     <strong>ISP:</strong> {ipInfo.isp}

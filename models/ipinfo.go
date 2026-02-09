@@ -28,6 +28,7 @@ type IPInfo struct {
 	ISP         string    `json:"isp"`                           // ISP提供商
 	Org         string    `json:"org"`                           // 组织
 	AS          string    `json:"as"`                            // AS号
+	ISPType     string    `json:"ispType"`                       // ISP类型: hosting(机房), residential(家宽)
 	RawResponse string    `gorm:"type:text" json:"-"`            // 原始JSON响应
 	Provider    string    `json:"provider"`                      // 数据提供商
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"createdAt"`
@@ -36,6 +37,12 @@ type IPInfo struct {
 
 // 缓存有效期：7天
 const ipInfoCacheTTL = 7 * 24 * time.Hour
+
+// ISP类型常量
+const (
+	ISPTypeHosting     = "hosting"     // 机房/数据中心
+	ISPTypeResidential = "residential" // 家宽/住宅网络
+)
 
 // ipInfoCache 内存缓存
 var ipInfoCache *cache.MapCache[string, IPInfo]
@@ -174,13 +181,14 @@ type ipAPIResponse struct {
 	ISP         string  `json:"isp"`
 	Org         string  `json:"org"`
 	AS          string  `json:"as"`
+	Hosting     bool    `json:"hosting"`
 	Query       string  `json:"query"`
 }
 
 // fetchIPInfoFromAPI 从第三方API获取IP信息
 func fetchIPInfoFromAPI(ip string) (*IPInfo, error) {
 	// 使用 ip-api.com（支持中文，免费）
-	url := fmt.Sprintf("http://ip-api.com/json/%s?lang=zh-CN&fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query", ip)
+	url := fmt.Sprintf("http://ip-api.com/json/%s?lang=zh-CN&fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,hosting,query", ip)
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -206,6 +214,12 @@ func fetchIPInfoFromAPI(ip string) (*IPInfo, error) {
 		return nil, fmt.Errorf("API返回错误: %s", apiResp.Message)
 	}
 
+	// 根据hosting字段判断ISP类型
+	ispType := ISPTypeResidential // 家宽
+	if apiResp.Hosting {
+		ispType = ISPTypeHosting // 机房
+	}
+
 	// 转换为IPInfo结构
 	info := &IPInfo{
 		IP:          ip,
@@ -221,6 +235,7 @@ func fetchIPInfoFromAPI(ip string) (*IPInfo, error) {
 		ISP:         apiResp.ISP,
 		Org:         apiResp.Org,
 		AS:          apiResp.AS,
+		ISPType:     ispType,
 		RawResponse: string(body),
 		Provider:    "ip-api.com",
 	}
