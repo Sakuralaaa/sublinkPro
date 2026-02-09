@@ -167,6 +167,16 @@ export default function SubscriptionFormDialog({
   const [llmLoading, setLlmLoading] = useState(false);
   const [llmResult, setLlmResult] = useState('');
 
+  // 构建LLM用节点列表（仅发送非敏感信息）
+  const getNodesForLLM = () =>
+    selectedNodesList.map((n) => ({
+      id: n.ID,
+      name: n.LinkName || n.Name,
+      link: n.Link,
+      country: n.LinkCountry,
+      group: n.Group
+    }));
+
   // 切换面板展开状态
   const handlePanelChange = (panel) => (event, isExpanded) => {
     setExpandedPanels((prev) => ({
@@ -850,13 +860,7 @@ export default function SubscriptionFormDialog({
                       setLlmLoading(true);
                       setLlmResult('');
                       try {
-                        const nodes = selectedNodesList.map((n) => ({
-                          id: n.ID,
-                          name: n.LinkName || n.Name,
-                          link: n.Link,
-                          country: n.LinkCountry,
-                          group: n.Group
-                        }));
+                        const nodes = getNodesForLLM();
                         const res = await llmOrganizeNodes({ nodes, instruction: llmInstruction });
                         setLlmResult(res.data?.result || JSON.stringify(res.data));
                       } catch (error) {
@@ -880,13 +884,7 @@ export default function SubscriptionFormDialog({
                       setLlmLoading(true);
                       setLlmResult('');
                       try {
-                        const nodes = selectedNodesList.map((n) => ({
-                          id: n.ID,
-                          name: n.LinkName || n.Name,
-                          link: n.Link,
-                          country: n.LinkCountry,
-                          group: n.Group
-                        }));
+                        const nodes = getNodesForLLM();
                         const clientType = formData.clash ? 'clash' : formData.surge ? 'surge' : 'clash';
                         const res = await llmGenerateRules({ nodes, clientType, instruction: llmInstruction });
                         setLlmResult(res.data?.result || JSON.stringify(res.data));

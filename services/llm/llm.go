@@ -12,6 +12,9 @@ import (
 	"time"
 )
 
+// httpClientTimeout is the timeout duration for LLM API requests
+const httpClientTimeout = 120 * time.Second
+
 // ChatMessage represents a message in the chat completion request
 type ChatMessage struct {
 	Role    string `json:"role"`
@@ -68,6 +71,17 @@ func GetConfig() (*LLMConfig, error) {
 	}, nil
 }
 
+// buildEndpointURL constructs the chat completions endpoint URL from the base API URL
+func buildEndpointURL(apiUrl string) string {
+	if strings.HasSuffix(apiUrl, "/chat/completions") {
+		return apiUrl
+	}
+	if strings.HasSuffix(apiUrl, "/v1") {
+		return apiUrl + "/chat/completions"
+	}
+	return strings.TrimRight(apiUrl, "/") + "/v1/chat/completions"
+}
+
 // callAPI sends a chat completion request to the OpenAI-compatible API
 func callAPI(config *LLMConfig, messages []ChatMessage) (string, error) {
 	reqBody := ChatRequest{
@@ -81,13 +95,7 @@ func callAPI(config *LLMConfig, messages []ChatMessage) (string, error) {
 		return "", fmt.Errorf("序列化请求失败: %v", err)
 	}
 
-	apiEndpoint := strings.TrimRight(config.APIUrl, "/") + "/v1/chat/completions"
-	// If URL already contains /v1/chat/completions or /chat/completions, use as-is
-	if strings.HasSuffix(config.APIUrl, "/chat/completions") {
-		apiEndpoint = config.APIUrl
-	} else if strings.HasSuffix(config.APIUrl, "/v1") {
-		apiEndpoint = config.APIUrl + "/chat/completions"
-	}
+	apiEndpoint := buildEndpointURL(config.APIUrl)
 
 	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
@@ -97,7 +105,7 @@ func callAPI(config *LLMConfig, messages []ChatMessage) (string, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+config.APIKey)
 
-	client := &http.Client{Timeout: 120 * time.Second}
+	client := &http.Client{Timeout: httpClientTimeout}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("请求LLM API失败: %v", err)
