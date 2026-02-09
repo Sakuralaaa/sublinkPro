@@ -565,6 +565,7 @@ func Run() {
 	routers.Share(r)
 	routers.Airport(r)
 	routers.NodeCheck(r)
+	routers.LLM(r)
 
 	// 处理前端路由 (SPA History Mode) 和静态文件
 	// 必须在所有 backend 路由注册之后注册
