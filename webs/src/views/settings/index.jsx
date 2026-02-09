@@ -11,12 +11,14 @@ import Snackbar from '@mui/material/Snackbar';
 import PersonIcon from '@mui/icons-material/Person';
 import WebhookIcon from '@mui/icons-material/Webhook';
 import TelegramIcon from '@mui/icons-material/Telegram';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import ProfileSettings from './components/ProfileSettings';
 import WebhookSettings from './components/WebhookSettings';
 import TelegramSettings from './components/TelegramSettings';
+import LLMSettings from './components/LLMSettings';
 
 // ==============================|| Tab Panel ||============================== //
 
@@ -77,6 +79,7 @@ export default function UserSettings() {
             label="Telegram 机器人"
             {...a11yProps(2)}
           />
+          <Tab icon={<SmartToyIcon sx={{ mr: 1 }} />} iconPosition="start" label="LLM API" {...a11yProps(3)} />
         </Tabs>
       </Box>
 
@@ -90,6 +93,10 @@ export default function UserSettings() {
 
       <TabPanel value={tabValue} index={2}>
         <TelegramSettings showMessage={showMessage} loading={loading} setLoading={setLoading} />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={3}>
+        <LLMSettings showMessage={showMessage} loading={loading} setLoading={setLoading} />
       </TabPanel>
 
       {/* 提示消息 */}

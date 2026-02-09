@@ -59,3 +59,29 @@ export function updateSystemDomain(data) {
     data
   });
 }
+
+// 获取 LLM 配置
+export function getLLMConfig() {
+  return request({
+    url: '/v1/settings/llm',
+    method: 'get'
+  });
+}
+
+// 保存 LLM 配置
+export function updateLLMConfig(data) {
+  return request({
+    url: '/v1/settings/llm',
+    method: 'post',
+    data
+  });
+}
+
+// 测试 LLM 连接
+export function testLLMConnection(data) {
+  return request({
+    url: '/v1/settings/llm/test',
+    method: 'post',
+    data
+  });
+}

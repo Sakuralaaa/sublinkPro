@@ -28,5 +28,10 @@ func Settings(r *gin.Engine) {
 		SettingsGroup.POST("/telegram/test", middlewares.DemoModeRestrict, api.TestTelegramConnection)
 		SettingsGroup.GET("/telegram/status", api.GetTelegramStatus)
 		SettingsGroup.POST("/telegram/reconnect", middlewares.DemoModeRestrict, api.ReconnectTelegram)
+
+		// LLM API 设置
+		SettingsGroup.GET("/llm", api.GetLLMConfig)
+		SettingsGroup.POST("/llm", middlewares.DemoModeRestrict, api.UpdateLLMConfig)
+		SettingsGroup.POST("/llm/test", middlewares.DemoModeRestrict, api.LLMTestConnection)
 	}
 }

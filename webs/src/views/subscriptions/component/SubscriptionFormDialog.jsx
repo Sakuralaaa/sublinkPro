@@ -39,6 +39,7 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import SecurityIcon from '@mui/icons-material/Security';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 import NodeRenameBuilder from './NodeRenameBuilder';
 import NodeNamePreprocessor from 'components/NodeNamePreprocessor';
@@ -48,6 +49,8 @@ import NodeProtocolFilter from 'components/NodeProtocolFilter';
 import NodeTransferBox from './NodeTransferBox';
 import DeduplicationConfig from './DeduplicationConfig';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import CircularProgress from '@mui/material/CircularProgress';
+import { llmOrganizeNodes, llmGenerateRules } from 'api/llm';
 
 // ISO国家代码转换为国旗emoji
 const isoToFlag = (isoCode) => {
@@ -155,8 +158,14 @@ export default function SubscriptionFormDialog({
     filter: false,
     dedup: false,
     naming: false,
-    advanced: false
+    advanced: false,
+    llm: false
   });
+
+  // LLM 相关状态
+  const [llmInstruction, setLlmInstruction] = useState('');
+  const [llmLoading, setLlmLoading] = useState(false);
+  const [llmResult, setLlmResult] = useState('');
 
   // 切换面板展开状态
   const handlePanelChange = (panel) => (event, isExpanded) => {
@@ -798,6 +807,117 @@ export default function SubscriptionFormDialog({
                   onChange={(e) => setFormData({ ...formData, IPWhitelist: e.target.value })}
                   helperText="每行一个 IP 或 CIDR"
                 />
+              </Stack>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* ========== LLM 智能助手 ========== */}
+          <Accordion expanded={expandedPanels.llm} onChange={handlePanelChange('llm')} sx={accordionSx}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={accordionSummarySx}>
+              <SmartToyIcon color="primary" />
+              <Typography variant="subtitle1" fontWeight={600}>
+                LLM 智能助手
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack spacing={2.5}>
+                <Alert severity="info">
+                  <Typography variant="body2">
+                    使用大语言模型智能整理节点分组或生成订阅规则。请先在设置页面配置 LLM API。
+                  </Typography>
+                </Alert>
+
+                <TextField
+                  fullWidth
+                  label="指令说明（可选）"
+                  multiline
+                  rows={2}
+                  value={llmInstruction}
+                  onChange={(e) => setLlmInstruction(e.target.value)}
+                  placeholder="例如：按地区分组节点，生成国内直连和国外代理的分流规则"
+                  helperText="告诉 AI 你希望如何整理节点或生成规则，留空将使用默认策略"
+                />
+
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    variant="outlined"
+                    startIcon={llmLoading ? <CircularProgress size={20} /> : <SmartToyIcon />}
+                    onClick={async () => {
+                      if (formData.selectedNodes.length === 0 && formData.selectedGroups.length === 0) {
+                        setLlmResult('请先选择节点或分组');
+                        return;
+                      }
+                      setLlmLoading(true);
+                      setLlmResult('');
+                      try {
+                        const nodes = selectedNodesList.map((n) => ({
+                          id: n.ID,
+                          name: n.LinkName || n.Name,
+                          link: n.Link,
+                          country: n.LinkCountry,
+                          group: n.Group
+                        }));
+                        const res = await llmOrganizeNodes({ nodes, instruction: llmInstruction });
+                        setLlmResult(res.data?.result || JSON.stringify(res.data));
+                      } catch (error) {
+                        setLlmResult('整理失败: ' + (error.message || '未知错误'));
+                      } finally {
+                        setLlmLoading(false);
+                      }
+                    }}
+                    disabled={llmLoading}
+                  >
+                    智能整理节点
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={llmLoading ? <CircularProgress size={20} /> : <SmartToyIcon />}
+                    onClick={async () => {
+                      if (formData.selectedNodes.length === 0 && formData.selectedGroups.length === 0) {
+                        setLlmResult('请先选择节点或分组');
+                        return;
+                      }
+                      setLlmLoading(true);
+                      setLlmResult('');
+                      try {
+                        const nodes = selectedNodesList.map((n) => ({
+                          id: n.ID,
+                          name: n.LinkName || n.Name,
+                          link: n.Link,
+                          country: n.LinkCountry,
+                          group: n.Group
+                        }));
+                        const clientType = formData.clash ? 'clash' : formData.surge ? 'surge' : 'clash';
+                        const res = await llmGenerateRules({ nodes, clientType, instruction: llmInstruction });
+                        setLlmResult(res.data?.result || JSON.stringify(res.data));
+                      } catch (error) {
+                        setLlmResult('生成失败: ' + (error.message || '未知错误'));
+                      } finally {
+                        setLlmLoading(false);
+                      }
+                    }}
+                    disabled={llmLoading}
+                  >
+                    生成订阅规则
+                  </Button>
+                </Stack>
+
+                {llmResult && (
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: 'action.hover',
+                      borderRadius: 1,
+                      maxHeight: 400,
+                      overflow: 'auto',
+                      whiteSpace: 'pre-wrap',
+                      fontFamily: 'monospace',
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    {llmResult}
+                  </Box>
+                )}
               </Stack>
             </AccordionDetails>
           </Accordion>

@@ -191,3 +191,48 @@ func UpdateSystemDomain(c *gin.Context) {
 	}
 	utils.OkWithMsg(c, "保存成功")
 }
+
+// GetLLMConfig 获取LLM配置
+func GetLLMConfig(c *gin.Context) {
+	apiUrl, _ := models.GetSetting("llm_api_url")
+	apiKey, _ := models.GetSetting("llm_api_key")
+	model, _ := models.GetSetting("llm_model")
+	if model == "" {
+		model = "gpt-3.5-turbo"
+	}
+
+	utils.OkDetailed(c, "获取成功", gin.H{
+		"apiUrl": apiUrl,
+		"apiKey": apiKey,
+		"model":  model,
+	})
+}
+
+// UpdateLLMConfig 更新LLM配置
+func UpdateLLMConfig(c *gin.Context) {
+	var req struct {
+		APIUrl string `json:"apiUrl"`
+		APIKey string `json:"apiKey"`
+		Model  string `json:"model"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.FailWithMsg(c, "参数错误")
+		return
+	}
+
+	if err := models.SetSetting("llm_api_url", req.APIUrl); err != nil {
+		utils.FailWithMsg(c, "保存 API URL 失败")
+		return
+	}
+	if err := models.SetSetting("llm_api_key", req.APIKey); err != nil {
+		utils.FailWithMsg(c, "保存 API Key 失败")
+		return
+	}
+	if err := models.SetSetting("llm_model", req.Model); err != nil {
+		utils.FailWithMsg(c, "保存 Model 失败")
+		return
+	}
+
+	utils.OkWithMsg(c, "保存成功")
+}
