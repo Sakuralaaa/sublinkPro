@@ -4,31 +4,30 @@
   **✨ 强大的代理订阅管理与转换工具 ✨**
 
   <p>
-    <img src="https://img.shields.io/github/go-mod/go-version/ZeroDeng01/sublinkPro?style=flat-square&logo=go&logoColor=white" alt="Go Version"/>
-    <img src="https://img.shields.io/github/package-json/dependency-version/ZeroDeng01/sublinkPro/react?filename=webs%2Fpackage.json&style=flat-square&logo=react&logoColor=white&color=61DAFB" alt="React Version"/>
-    <img src="https://img.shields.io/github/package-json/dependency-version/ZeroDeng01/sublinkPro/@mui/material?filename=webs%2Fpackage.json&style=flat-square&logo=mui&logoColor=white&label=MUI&color=007FFF" alt="MUI Version"/>
-    <img src="https://img.shields.io/github/package-json/dependency-version/ZeroDeng01/sublinkPro/vite?filename=webs%2Fpackage.json&style=flat-square&logo=vite&logoColor=white&color=646CFF" alt="Vite Version"/>
+    <img src="https://img.shields.io/github/go-mod/go-version/Sakuralaaa/sublinkPro?style=flat-square&logo=go&logoColor=white" alt="Go Version"/>
+    <img src="https://img.shields.io/github/package-json/dependency-version/Sakuralaaa/sublinkPro/react?filename=webs%2Fpackage.json&style=flat-square&logo=react&logoColor=white&color=61DAFB" alt="React Version"/>
+    <img src="https://img.shields.io/github/package-json/dependency-version/Sakuralaaa/sublinkPro/@mui/material?filename=webs%2Fpackage.json&style=flat-square&logo=mui&logoColor=white&label=MUI&color=007FFF" alt="MUI Version"/>
+    <img src="https://img.shields.io/github/package-json/dependency-version/Sakuralaaa/sublinkPro/vite?filename=webs%2Fpackage.json&style=flat-square&logo=vite&logoColor=white&color=646CFF" alt="Vite Version"/>
   </p>
   <p>
-    <img src="https://img.shields.io/github/v/release/ZeroDeng01/sublinkPro?style=flat-square&logo=github&label=Latest" alt="Latest Release"/>
-    <img src="https://img.shields.io/github/release-date/ZeroDeng01/sublinkPro?style=flat-square&logo=github&label=Release%20Date" alt="Release Date"/>
+    <img src="https://img.shields.io/github/v/release/Sakuralaaa/sublinkPro?style=flat-square&logo=github&label=Latest" alt="Latest Release"/>
+    <img src="https://img.shields.io/github/release-date/Sakuralaaa/sublinkPro?style=flat-square&logo=github&label=Release%20Date" alt="Release Date"/>
   </p>
   <p>
-    <img src="https://img.shields.io/docker/v/zerodeng/sublink-pro/latest?style=flat-square&logo=docker&logoColor=white&label=Docker%20Stable" alt="Docker Stable Version"/>
-    <img src="https://img.shields.io/docker/pulls/zerodeng/sublink-pro?style=flat-square&logo=docker&logoColor=white&label=Docker%20Pulls" alt="Docker Pulls"/>
-    <img src="https://img.shields.io/docker/image-size/zerodeng/sublink-pro/latest?style=flat-square&logo=docker&logoColor=white&label=Image%20Size" alt="Docker Image Size"/>
+    <img src="https://ghcr-badge.egpl.dev/sakuralaaa/sublinkpro/latest_tag?trim=major&label=GHCR%20Stable&style=flat-square" alt="GHCR Stable Version"/>
+    <img src="https://ghcr-badge.egpl.dev/sakuralaaa/sublinkpro/size?label=Image%20Size&style=flat-square" alt="GHCR Image Size"/>
   </p>
   <p>
-    <img src="https://img.shields.io/github/stars/ZeroDeng01/sublinkPro?style=flat-square&logo=github&label=Stars" alt="GitHub Stars"/>
-    <img src="https://img.shields.io/github/forks/ZeroDeng01/sublinkPro?style=flat-square&logo=github&label=Forks" alt="GitHub Forks"/>
-    <img src="https://img.shields.io/github/issues/ZeroDeng01/sublinkPro?style=flat-square&logo=github&label=Issues" alt="GitHub Issues"/>
-    <img src="https://img.shields.io/github/license/ZeroDeng01/sublinkPro?style=flat-square&label=License" alt="License"/>
+    <img src="https://img.shields.io/github/stars/Sakuralaaa/sublinkPro?style=flat-square&logo=github&label=Stars" alt="GitHub Stars"/>
+    <img src="https://img.shields.io/github/forks/Sakuralaaa/sublinkPro?style=flat-square&logo=github&label=Forks" alt="GitHub Forks"/>
+    <img src="https://img.shields.io/github/issues/Sakuralaaa/sublinkPro?style=flat-square&logo=github&label=Issues" alt="GitHub Issues"/>
+    <img src="https://img.shields.io/github/license/Sakuralaaa/sublinkPro?style=flat-square&label=License" alt="License"/>
   </p>
   <p>
-    <a href="https://github.com/ZeroDeng01/sublinkPro/issues">
+    <a href="https://github.com/Sakuralaaa/sublinkPro/issues">
       <img src="https://img.shields.io/badge/问题反馈-Issues-blue?style=flat-square&logo=github" alt="Issues"/>
     </a>
-    <a href="https://github.com/ZeroDeng01/sublinkPro/releases">
+    <a href="https://github.com/Sakuralaaa/sublinkPro/releases">
       <img src="https://img.shields.io/badge/版本下载-Releases-green?style=flat-square&logo=github" alt="Releases"/>
     </a>
   </p>
@@ -78,7 +77,7 @@
 ```yaml
 services:
   sublinkpro:
-    image: zerodeng/sublink-pro
+    image: ghcr.io/sakuralaaa/sublinkpro
     container_name: sublinkpro
     ports:
       - "8000:8000"
@@ -164,9 +163,9 @@ docker-compose up -d
 
 <div align="center">
 
-[//]: # (  <img src="https://repobeez.abhijithganesh.com/api/insert/ZeroDeng01/sublinkPro" alt="Repobeez" height="0" width="0" style="display: none"/>)
+[//]: # (  <img src="https://repobeez.abhijithganesh.com/api/insert/Sakuralaaa/sublinkPro" alt="Repobeez" height="0" width="0" style="display: none"/>)
   
-  ![Star History Chart](https://api.star-history.com/svg?repos=ZeroDeng01/sublinkPro&type=Date)
+  ![Star History Chart](https://api.star-history.com/svg?repos=Sakuralaaa/sublinkPro&type=Date)
 </div>
 
 ---
@@ -176,7 +175,7 @@ docker-compose up -d
 如果这个项目对您有帮助，欢迎：
 
 - ⭐ **Star** 这个项目表示支持
-- 🐛 提交 [Issue](https://github.com/ZeroDeng01/sublinkPro/issues) 反馈问题或建议
+- 🐛 提交 [Issue](https://github.com/Sakuralaaa/sublinkPro/issues) 反馈问题或建议
 - 🔧 提交 Pull Request 贡献代码
 - 📖 完善文档和使用教程
 
@@ -191,5 +190,5 @@ docker-compose up -d
 ---
 
 <div align="center">
-  <sub>Made with ❤️ by <a href="https://github.com/ZeroDeng01">ZeroDeng01</a></sub>
+  <sub>Made with ❤️ by <a href="https://github.com/Sakuralaaa">Sakuralaaa</a></sub>
 </div>

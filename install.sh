@@ -63,7 +63,7 @@ get_current_version() {
 
 # 获取最新版本
 get_latest_version() {
-    latest_release=$(curl --silent "https://api.github.com/repos/ZeroDeng01/sublinkPro/releases/latest" \
+    latest_release=$(curl --silent "https://api.github.com/repos/Sakuralaaa/sublinkPro/releases/latest" \
         | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
     if [ -z "$latest_release" ]; then
         print_error "无法获取最新版本信息，请检查网络连接。"
@@ -115,7 +115,7 @@ restart_service() {
 download_and_install_binary() {
     print_info "正在下载 $latest_release 版本..."
     cd ~ || exit 1
-    curl -LO "https://github.com/ZeroDeng01/sublinkPro/releases/download/$latest_release/$file_name"
+    curl -LO "https://github.com/Sakuralaaa/sublinkPro/releases/download/$latest_release/$file_name"
     
     if [ ! -f "$file_name" ]; then
         print_error "下载失败，请检查网络连接。"

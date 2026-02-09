@@ -151,7 +151,7 @@ environment:
 ```yaml
 services:
   sublinkpro:
-    image: zerodeng/sublink-pro:latest
+    image: ghcr.io/sakuralaaa/sublinkpro:latest
     container_name: sublinkpro
     ports:
       - "8000:8000"

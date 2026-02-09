@@ -7,8 +7,8 @@
 services:
   sublinkpro:
     # 镜像选择
-    # image: zerodeng/sublink-pro:dev    # 开发版（功能尝鲜）
-    image: zerodeng/sublink-pro:latest   # 稳定版（推荐）
+    # image: ghcr.io/sakuralaaa/sublinkpro:dev    # 开发版（功能尝鲜）
+    image: ghcr.io/sakuralaaa/sublinkpro:latest   # 稳定版（推荐）
     
     container_name: sublinkpro
     
