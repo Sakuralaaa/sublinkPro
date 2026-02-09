@@ -576,6 +576,7 @@ type NodeFilter struct {
 	DelayStatus string   // 延迟状态过滤: untested, success, timeout, error
 	Countries   []string // 国家代码过滤
 	Tags        []string // 标签过滤（匹配任一标签的节点）
+	ISPType     string   // ISP类型过滤: hosting(机房/非家宽), residential(家宽)
 	SortBy      string   // 排序字段: "delay" 或 "speed"
 	SortOrder   string   // 排序顺序: "asc" 或 "desc"
 }
@@ -690,6 +691,14 @@ func (node *Node) ListWithFilters(filter NodeFilter) ([]Node, error) {
 		// 协议类型过滤
 		if filter.Protocol != "" {
 			if !strings.EqualFold(n.Protocol, filter.Protocol) {
+				return false
+			}
+		}
+
+		// ISP类型过滤（家宽/非家宽）
+		if filter.ISPType != "" {
+			ispType := GetIPInfoISPType(n.LandingIP)
+			if ispType == "" || !strings.EqualFold(ispType, filter.ISPType) {
 				return false
 			}
 		}

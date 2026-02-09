@@ -40,6 +40,8 @@ export default function NodeFilters({
   setTagFilter,
   protocolFilter,
   setProtocolFilter,
+  ispTypeFilter,
+  setIspTypeFilter,
   groupOptions,
   sourceOptions,
   countryOptions,
@@ -88,6 +90,14 @@ export default function NodeFilters({
               {protocol.toUpperCase()}
             </MenuItem>
           ))}
+        </Select>
+      </FormControl>
+      <FormControl size="small" sx={{ minWidth: 120 }}>
+        <InputLabel>线路类型</InputLabel>
+        <Select value={ispTypeFilter} label="线路类型" onChange={(e) => setIspTypeFilter(e.target.value)} variant={'outlined'}>
+          <MenuItem value="">全部</MenuItem>
+          <MenuItem value="residential">家宽</MenuItem>
+          <MenuItem value="hosting">非家宽(机房)</MenuItem>
         </Select>
       </FormControl>
       <FormControl size="small" sx={{ minWidth: 100 }}>
@@ -229,6 +239,8 @@ NodeFilters.propTypes = {
   setTagFilter: PropTypes.func.isRequired,
   protocolFilter: PropTypes.string.isRequired,
   setProtocolFilter: PropTypes.func.isRequired,
+  ispTypeFilter: PropTypes.string.isRequired,
+  setIspTypeFilter: PropTypes.func.isRequired,
   groupOptions: PropTypes.array.isRequired,
   sourceOptions: PropTypes.array.isRequired,
   countryOptions: PropTypes.array.isRequired,

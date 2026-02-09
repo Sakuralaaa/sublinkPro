@@ -9,4 +9,7 @@ sublink.exe
 .idea/
 static
 sublinkPro.exe
+webs/dist/
+webs/node_modules/
+webs/.yarn/
 
