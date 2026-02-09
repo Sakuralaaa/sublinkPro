@@ -697,14 +697,8 @@ func (node *Node) ListWithFilters(filter NodeFilter) ([]Node, error) {
 
 		// ISP类型过滤（家宽/非家宽）
 		if filter.ISPType != "" {
-			if n.LandingIP == "" {
-				return false // 没有落地IP信息的节点不匹配
-			}
 			ispType := GetIPInfoISPType(n.LandingIP)
-			if ispType == "" {
-				return false // 没有ISP类型信息的节点不匹配
-			}
-			if !strings.EqualFold(ispType, filter.ISPType) {
+			if ispType == "" || !strings.EqualFold(ispType, filter.ISPType) {
 				return false
 			}
 		}
